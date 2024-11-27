@@ -1,34 +1,22 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Root, View, Panel } from '@vkontakte/vkui'
+import MainPanel from './panels/MainPanel'
+import PlayerPanel from './panels/PlayerPanel'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activePanel, setActivePanel] = useState('main')
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <Root activeView='main-view'>
+      <View id="main-view" activePanel={activePanel}>
+          <Panel id="main" centered>
+              <MainPanel />
+          </Panel>
+          <Panel id="player" centered>
+              <PlayerPanel />
+          </Panel>
+      </View>
+    </Root>
   )
 }
 
