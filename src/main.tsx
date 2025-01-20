@@ -6,6 +6,8 @@ import vkBridge, { parseURLSearchParamsForGetLaunchParams } from '@vkontakte/vk-
 import { useAppearance, useInsets, useAdaptivity } from '@vkontakte/vk-bridge-react'
 import { Platform, ConfigProvider, AdaptivityProvider, AppRoot } from '@vkontakte/vkui'
 import { transformVKBridgeAdaptivity } from './transformers/transformVKBridgeAdaptivity.ts'
+import { PanelProvider } from './context/PanelContext'
+import { PlayerProvider } from './context/PlayerContext'
 
 vkBridge.send('VKWebAppInit')
 
@@ -24,7 +26,11 @@ const RootWrapper = () => {
     >
       <AdaptivityProvider {...vkBridgeAdaptivityProps}>
         <AppRoot mode="full" safeAreaInsets={vkBridgeInsets}>
-          <App />
+          <PanelProvider>
+            <PlayerProvider>
+              <App />
+            </PlayerProvider>
+          </PanelProvider>
         </AppRoot>
       </AdaptivityProvider>
     </ConfigProvider>
