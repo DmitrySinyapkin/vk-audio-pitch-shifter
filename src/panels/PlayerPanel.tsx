@@ -19,7 +19,7 @@ const PlayerPanel = () => {
         <>
             <PanelHeader
                 before={
-                    <PanelHeaderButton onClick={onBackButtonClick}>
+                    <PanelHeaderButton aria-label="back" onClick={onBackButtonClick}>
                         <Icon24BrowserBack />
                     </PanelHeaderButton>
                 }
