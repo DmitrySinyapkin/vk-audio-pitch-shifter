@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
-//import './index.css'
+import '@vkontakte/vkui/dist/vkui.css'
 import vkBridge, { parseURLSearchParamsForGetLaunchParams } from '@vkontakte/vk-bridge'
 import { useAppearance, useInsets, useAdaptivity } from '@vkontakte/vk-bridge-react'
 import { Platform, ConfigProvider, AdaptivityProvider, AppRoot } from '@vkontakte/vkui'
