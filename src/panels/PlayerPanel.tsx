@@ -3,6 +3,7 @@ import { PlayerContext } from "../context/PlayerContext";
 import { PanelContext } from "../context/PanelContext";
 import { PanelHeader, PanelHeaderButton, Group } from "@vkontakte/vkui";
 import { Icon24BrowserBack } from '@vkontakte/icons'
+import AudioPlayer from "../components/player/AudioPlayer";
 
 const PlayerPanel = () => {
     const { source, setSource } = useContext(PlayerContext)
@@ -27,7 +28,7 @@ const PlayerPanel = () => {
                 Player
             </PanelHeader>
             <Group>
-                <audio src={source} controls />
+                <AudioPlayer />
             </Group>
         </>
     )
