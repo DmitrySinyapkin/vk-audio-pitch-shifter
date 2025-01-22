@@ -7,7 +7,10 @@ const TrackNavigation  = () => {
     const { player, time, setTime } = useContext(PlayerContext)
 
     const changePosition = (value: number) => {
-        player?.seek(value)
+        if (player?.state === 'started') {
+            player?.stop()
+            player?.start(0, value)
+        }
         if (setTime) setTime(value)
     }
 

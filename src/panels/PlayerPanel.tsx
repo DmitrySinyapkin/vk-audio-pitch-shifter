@@ -1,9 +1,10 @@
 import { useContext } from "react";
 import { PlayerContext } from "../context/PlayerContext";
 import { PanelContext } from "../context/PanelContext";
-import { PanelHeader, PanelHeaderButton, Group } from "@vkontakte/vkui";
+import { PanelHeader, PanelHeaderButton, Group, Flex, Spacing } from "@vkontakte/vkui";
 import { Icon24BrowserBack } from '@vkontakte/icons'
 import AudioPlayer from "../components/player/AudioPlayer";
+import PitchShifter from "../components/pitchShifter/PitchShifter";
 
 const PlayerPanel = () => {
     const { setSource, player, isPlaying, setIsPlaying, setTime } = useContext(PlayerContext)
@@ -33,7 +34,12 @@ const PlayerPanel = () => {
                 Player
             </PanelHeader>
             <Group>
-                <AudioPlayer />
+                <Flex direction='column' align="center">
+                    <AudioPlayer />
+                    <Spacing size='4xl' />
+                    <PitchShifter />
+                </Flex>
+                <Spacing size='4xl' />
             </Group>
         </>
     )
