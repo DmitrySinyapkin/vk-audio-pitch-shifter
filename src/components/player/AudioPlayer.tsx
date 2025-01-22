@@ -1,8 +1,8 @@
 import { useEffect, useContext } from "react";
 import PlayButton from "./PlayButton";
 import TrackNavigation from "./TrackNavigation";
+import VolumeControl from "./VolumeControl";
 import { Flex, Spinner } from "@vkontakte/vkui";
-import { Icon48Play, Icon48Pause, Icon48Volume, Icon48Mute } from '@vkontakte/icons'
 import { PlayerContext } from "../../context/PlayerContext";
 
 const AudioPlayer = () => {
@@ -43,6 +43,7 @@ const AudioPlayer = () => {
                     ? <>
                         <PlayButton />
                         <TrackNavigation />
+                        <VolumeControl />
                     </>
                     : <Spinner size="large" />
                 }
