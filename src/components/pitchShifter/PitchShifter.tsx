@@ -1,15 +1,7 @@
-import { ReactNode, useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
-import { Slider, Flex, Text } from "@vkontakte/vkui";
-
-interface SliderItem {
-    min: number
-    max: number
-    step: number
-    value: number
-    onChange: (value: number) => void
-    description: ReactNode
-}
+import { Flex, Text } from "@vkontakte/vkui";
+import CustomSlider from "../common/CustomSlider";
 
 const PitchShifter = () => {
     const { player } = useContext(PlayerContext)
@@ -27,7 +19,7 @@ const PitchShifter = () => {
         setPlaybackRate(value)
     }
 
-    const sliders: SliderItem[] = [
+    const sliders: CustomSliderProps[] = [
         {
             min: -12,
             max: 12,
@@ -48,17 +40,8 @@ const PitchShifter = () => {
 
     return (
         <Flex direction="column" align="center" margin="auto" gap='4xl'>
-            {sliders.map((slider: SliderItem, index: number) => 
-                <Flex.Item key={index}flex="grow" style={{ width: '320px' }}>
-                    <Slider
-                        min={slider.min}
-                        max={slider.max}
-                        step={slider.step}
-                        value={slider.value}
-                        onChange={slider.onChange}
-                    />
-                    {slider.description}
-                </Flex.Item>
+            {sliders.map((slider: CustomSliderProps, index: number) => 
+                <CustomSlider slider={slider} key={index} />
             )}
         </Flex>
     )
