@@ -7,6 +7,10 @@ interface PlayerContextType {
     setSource?: Dispatch<SetStateAction<string | undefined>> | undefined
     player?: Player | undefined
     initPlayer?: () => void
+    time?: number
+    setTime?: Dispatch<SetStateAction<number>>
+    isPlaying?: boolean
+    setIsPlaying?: Dispatch<SetStateAction<boolean>>
 }
 
 export const PlayerContext = createContext<PlayerContextType>({ source: undefined })
@@ -14,6 +18,8 @@ export const PlayerContext = createContext<PlayerContextType>({ source: undefine
 export const PlayerProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const [source, setSource] = useState<string | undefined>(undefined)
     const [player, setPlayer] = useState<Player | undefined>(undefined)
+    const [isPlaying, setIsPlaying] = useState<boolean>(false)
+    const [time, setTime] = useState<number>(0)
 
     const initPlayer = () => {
         if (source) {
@@ -23,7 +29,7 @@ export const PlayerProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
 
     return (
-        <PlayerContext.Provider value={{ source, setSource, player, initPlayer }}>
+        <PlayerContext.Provider value={{ source, setSource, player, initPlayer, time, setTime, isPlaying, setIsPlaying }}>
             {children}
         </PlayerContext.Provider>
     )

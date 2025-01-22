@@ -6,11 +6,16 @@ import { Icon24BrowserBack } from '@vkontakte/icons'
 import AudioPlayer from "../components/player/AudioPlayer";
 
 const PlayerPanel = () => {
-    const { source, setSource } = useContext(PlayerContext)
+    const { setSource, player, isPlaying, setIsPlaying, setTime } = useContext(PlayerContext)
     const { setActivePanel } = useContext(PanelContext)
 
     const onBackButtonClick = () => {
-        if (setActivePanel && setSource) {
+        if (setActivePanel && setSource && setTime && setIsPlaying) {
+            if (isPlaying) {
+                player?.stop()
+                setIsPlaying(false)
+            }
+            setTime(0)
             setSource(undefined)
             setActivePanel('main')
         }
