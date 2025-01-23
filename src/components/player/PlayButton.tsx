@@ -4,11 +4,11 @@ import { useContext } from "react"
 import { PlayerContext } from "../../context/PlayerContext"
 
 const PlayButton = () => {
-    const { player, time, setTime, isPlaying, setIsPlaying } = useContext(PlayerContext)
+    const { player, time, setTime, isPlaying, setIsPlaying, playbackRate } = useContext(PlayerContext)
 
     const play = () => {
-        if (time && player?.buffer?.duration && time < player.buffer.duration) {
-            player?.start(0, time)
+        if (playbackRate && time && player?.buffer?.duration && time < player.buffer.duration) {
+            player?.start(0, time / playbackRate)
         } else {
             player?.start()
             if (setTime) setTime(0)

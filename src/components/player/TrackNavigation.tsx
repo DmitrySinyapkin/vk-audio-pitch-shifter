@@ -4,7 +4,7 @@ import { Flex, Slider, Text } from "@vkontakte/vkui"
 import { formatCurrentTime } from "../../utils/timeUtils"
 
 const TrackNavigation  = () => {
-    const { player, time, setTime } = useContext(PlayerContext)
+    const { player, time, setTime, playbackRate } = useContext(PlayerContext)
 
     const changePosition = (value: number) => {
         if (player?.state === 'started') {
@@ -16,11 +16,11 @@ const TrackNavigation  = () => {
 
     return (
         <Flex direction="column" justify="center" align="end">
-            <Text weight="3">{ formatCurrentTime(time!) }</Text>
+            <Text weight="3">{ formatCurrentTime(time! / playbackRate!) } / { formatCurrentTime(player?.buffer?.duration! / playbackRate!) }</Text>
             <div style={{ width: '200px' }}>
                 <Slider
                     min={0}
-                    max={player?.buffer.duration}
+                    max={player?.buffer?.duration! / playbackRate!}
                     value={time}
                     onChange={changePosition}
                     size="s"

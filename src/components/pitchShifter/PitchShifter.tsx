@@ -1,22 +1,19 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
 import { Flex, Text } from "@vkontakte/vkui";
 import CustomSlider from "../common/CustomSlider";
 
 const PitchShifter = () => {
-    const { player } = useContext(PlayerContext)
-
-    const [pitchOffset, setPitchOffset] = useState<number>(0)
-    const [playbackRate, setPlaybackRate] = useState<number>(1)
+    const { player, pitchOffset, setPitchOffset, playbackRate, setPlaybackRate } = useContext(PlayerContext)
 
     const changePitch = (value: number) => {
         player?.set({ detune: value * 100 })
-        setPitchOffset(value)
+        if (setPitchOffset) setPitchOffset(value)
     }
 
     const changePlaybackRate = (value: number) => {
         player?.set({ playbackRate: value })
-        setPlaybackRate(value)
+        if (setPlaybackRate) setPlaybackRate(value)
     }
 
     const sliders: CustomSliderProps[] = [
@@ -24,17 +21,17 @@ const PitchShifter = () => {
             min: -12,
             max: 12,
             step: 1,
-            value: pitchOffset,
+            value: pitchOffset!,
             onChange: changePitch,
-            description: <Text>Изменение в полутонах: {pitchOffset > 0 ? `+${pitchOffset}` : pitchOffset}</Text>
+            description: <Text>Изменение в полутонах: {pitchOffset! > 0 ? `+${pitchOffset}` : pitchOffset}</Text>
         },
         {
             min: 0.5,
             max: 1.5,
             step: 0.05,
-            value: playbackRate,
+            value: playbackRate!,
             onChange: changePlaybackRate,
-            description: <Text>Темп: {Math.trunc(playbackRate * 100)}%</Text>
+            description: <Text>Темп: {Math.trunc(playbackRate! * 100)}%</Text>
         }
     ]
 

@@ -11,6 +11,10 @@ interface PlayerContextType {
     setTime?: Dispatch<SetStateAction<number>>
     isPlaying?: boolean
     setIsPlaying?: Dispatch<SetStateAction<boolean>>
+    pitchOffset?: number
+    setPitchOffset?: Dispatch<SetStateAction<number>>
+    playbackRate?: number
+    setPlaybackRate?: Dispatch<SetStateAction<number>>
 }
 
 export const PlayerContext = createContext<PlayerContextType>({ source: undefined })
@@ -20,6 +24,8 @@ export const PlayerProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const [player, setPlayer] = useState<GrainPlayer | undefined>(undefined)
     const [isPlaying, setIsPlaying] = useState<boolean>(false)
     const [time, setTime] = useState<number>(0)
+    const [pitchOffset, setPitchOffset] = useState<number>(0)
+    const [playbackRate, setPlaybackRate] = useState<number>(1)
 
     const initPlayer = () => {
         if (source) {
@@ -29,7 +35,20 @@ export const PlayerProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
 
     return (
-        <PlayerContext.Provider value={{ source, setSource, player, initPlayer, time, setTime, isPlaying, setIsPlaying }}>
+        <PlayerContext.Provider value={{ 
+            source, 
+            setSource, 
+            player, 
+            initPlayer,
+            time, 
+            setTime, 
+            isPlaying, 
+            setIsPlaying,
+            pitchOffset,
+            setPitchOffset,
+            playbackRate,
+            setPlaybackRate 
+        }}>
             {children}
         </PlayerContext.Provider>
     )
