@@ -7,13 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tunnel": "vk-tunnel --insecure=0 --http-protocol=https --ws-protocol=wss --host=localhost --port=5173 --timeout=5000"
   },
   "dependencies": {
     "@vkontakte/icons": "^2.162.0",
     "@vkontakte/vk-bridge": "^2.15.0",
     "@vkontakte/vk-bridge-react": "^1.0.1",
-    "@vkontakte/vk-tunnel": "^0.2.2",
+    "@vkontakte/vk-tunnel": "^0.2.4",
     "@vkontakte/vkui": "^6.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -24,7 +25,7 @@
     "@eslint/js": "^9.9.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-basic-ssl": "^1.1.0",
+    "@vitejs/plugin-basic-ssl": "^1.2.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
