@@ -1,20 +1,31 @@
-import { FC, useContext, useRef, useState } from "react";
+import { FC, useContext, useEffect, useRef, useState } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
-import { Placeholder, DropZone, VisuallyHidden } from "@vkontakte/vkui";
+import { Placeholder, DropZone, VisuallyHidden, Spinner } from "@vkontakte/vkui";
 import { Icon56MusicOutline } from '@vkontakte/icons';
 import CustomSnackbar from "../common/CustomSnackbar";
 
 const AudioUpload = () => {
-    const { setTrack } = useContext(PlayerContext)
+    const { player, setTrack } = useContext(PlayerContext)
 
     const [error, setError] = useState<string | null>(null)
+    const [loading, setLoading] = useState<boolean>(false)
 
     const inputRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        if (player?.loaded) {
+            setLoading(false)
+        }
+    }, [player?.loaded])
 
     const Item: FC<{ active: boolean }> = ({ active }) => (
         <Placeholder.Container>
           <Placeholder.Icon>
-            <Icon56MusicOutline fill={active ? 'var(--vkui--color_icon_accent)' : undefined} />
+            {
+                loading 
+                    ? <Spinner size="large" />
+                    : <Icon56MusicOutline fill={active ? 'var(--vkui--color_icon_accent)' : undefined} />
+            }
           </Placeholder.Icon>
           <Placeholder.Header>Загрузить аудио</Placeholder.Header>
           <Placeholder.Text>
@@ -41,6 +52,7 @@ const AudioUpload = () => {
             return
         }
 
+        setLoading(true)
         const title = file.name || ''
         
         const fileReader = new FileReader()
