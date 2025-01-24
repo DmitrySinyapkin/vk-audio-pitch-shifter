@@ -5,7 +5,7 @@ import { GrainPlayer } from "tone";
 interface PlayerContextType {
     source: string | undefined
     sourceTitle?: string
-    setTrack?: (url: string | ArrayBuffer | undefined, title: string) => void
+    setTrack?: (url: string | undefined, title: string) => void
     player?: GrainPlayer | undefined
     initPlayer?: () => void
     time?: number
@@ -37,7 +37,7 @@ export const PlayerProvider: FC<{ children: ReactNode }> = ({ children }) => {
         }
     }
 
-    const setTrack = (url: string | ArrayBuffer | undefined, title: string) => {
+    const setTrack = (url: string | undefined, title: string) => {
         setSource(url)
         setSourceTitle(title)
     }

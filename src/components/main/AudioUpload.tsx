@@ -58,7 +58,7 @@ const AudioUpload = () => {
         const fileReader = new FileReader()
         fileReader.onload = function(e) {
             const url = e.target?.result
-            if (url && setTrack) {
+            if (url && typeof url === 'string' && setTrack) {
                 setTrack(url, title)
             }
         }
