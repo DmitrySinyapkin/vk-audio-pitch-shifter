@@ -1,6 +1,6 @@
-import { FC, useContext, useState } from "react";
+import { FC, useContext, useRef, useState } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
-import { Placeholder, DropZone } from "@vkontakte/vkui";
+import { Placeholder, DropZone, VisuallyHidden } from "@vkontakte/vkui";
 import { Icon56MusicOutline } from '@vkontakte/icons';
 import CustomSnackbar from "../common/CustomSnackbar";
 
@@ -9,6 +9,8 @@ const AudioUpload = () => {
 
     const [error, setError] = useState<string | null>(null)
 
+    const inputRef = useRef<HTMLInputElement>(null)
+
     const Item: FC<{ active: boolean }> = ({ active }) => (
         <Placeholder.Container>
           <Placeholder.Icon>
@@ -16,8 +18,11 @@ const AudioUpload = () => {
           </Placeholder.Icon>
           <Placeholder.Header>Загрузить аудио</Placeholder.Header>
           <Placeholder.Text>
-            Перенесите аудио-файл сюда, чтобы изменить его тональность или темп
+            Перетащите аудио-файл сюда, чтобы изменить его тональность или темп
           </Placeholder.Text>
+          <VisuallyHidden>
+            <input type="file" ref={inputRef} onChange={onInputFileChange} />
+          </VisuallyHidden>
         </Placeholder.Container>
       );
       
@@ -27,13 +32,16 @@ const AudioUpload = () => {
       
     const dropHandler = (event) => {
         event.preventDefault()
+        uploadFile(event.dataTransfer.files[0]) 
+    }
 
-        if (!event.dataTransfer.files[0]?.type.includes('audio')) {
+    const uploadFile = (file: File) => {
+        if (!file.type.includes('audio')) {
             setError('Неподдерживаемый формат. Загрузите аудио-файл')
             return
         }
 
-        const title = event.dataTransfer.files[0]?.name || ''
+        const title = file.name || ''
         
         const fileReader = new FileReader()
         fileReader.onload = function(e) {
@@ -42,7 +50,17 @@ const AudioUpload = () => {
                 setTrack(url, title)
             }
         }
-        fileReader.readAsDataURL(event.dataTransfer.files[0]) 
+        fileReader.readAsDataURL(file)
+    }
+
+    const onInputFileChange = () => {
+        if (inputRef.current?.files && inputRef.current.files[0]) {
+            uploadFile(inputRef.current.files[0])
+        }
+    }
+
+    const onDropZoneClick = () => {
+        inputRef.current?.click()
     }
 
     const onErrorClose = () => {
@@ -52,7 +70,7 @@ const AudioUpload = () => {
     return (
         <>
             <DropZone.Grid>
-                <DropZone onDragOver={dragOverHandler} onDrop={dropHandler}>
+                <DropZone onDragOver={dragOverHandler} onDrop={dropHandler} onClick={onDropZoneClick} style={{ cursor: 'pointer' }}>
                     {({ active }) => <Item active={active} />}
                 </DropZone>
             </DropZone.Grid>
