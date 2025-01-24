@@ -7,6 +7,7 @@ const PlayButton = () => {
     const { player, time, setTime, isPlaying, setIsPlaying, playbackRate } = useContext(PlayerContext)
 
     const play = () => {
+        if (!player?.loaded) return
         if (playbackRate && time && player?.buffer?.duration && time < player.buffer.duration) {
             player?.start(0, time / playbackRate)
         } else {
