@@ -7,17 +7,12 @@ import AudioPlayer from "../components/player/AudioPlayer";
 import PitchShifter from "../components/pitchShifter/PitchShifter";
 
 const PlayerPanel = () => {
-    const { setSource, player, isPlaying, setIsPlaying, setTime } = useContext(PlayerContext)
+    const { sourceTitle, resetPlayer } = useContext(PlayerContext)
     const { setActivePanel } = useContext(PanelContext)
 
     const onBackButtonClick = () => {
-        if (setActivePanel && setSource && setTime && setIsPlaying) {
-            if (isPlaying) {
-                player?.stop()
-                setIsPlaying(false)
-            }
-            setTime(0)
-            setSource(undefined)
+        if (setActivePanel && resetPlayer) {
+            resetPlayer()
             setActivePanel('main')
         }
     }
@@ -31,7 +26,7 @@ const PlayerPanel = () => {
                     </PanelHeaderButton>
                 }
             >
-                Player
+                {sourceTitle || 'Player'}
             </PanelHeader>
             <Group>
                 <Flex direction='column' align="center">

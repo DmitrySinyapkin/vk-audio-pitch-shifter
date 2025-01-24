@@ -4,7 +4,8 @@ import { GrainPlayer } from "tone";
 
 interface PlayerContextType {
     source: string | undefined
-    setSource?: Dispatch<SetStateAction<string | undefined>> | undefined
+    sourceTitle?: string
+    setTrack?: (url: string | ArrayBuffer | undefined, title: string) => void
     player?: GrainPlayer | undefined
     initPlayer?: () => void
     time?: number
@@ -15,12 +16,14 @@ interface PlayerContextType {
     setPitchOffset?: Dispatch<SetStateAction<number>>
     playbackRate?: number
     setPlaybackRate?: Dispatch<SetStateAction<number>>
+    resetPlayer?: () => void
 }
 
 export const PlayerContext = createContext<PlayerContextType>({ source: undefined })
 
 export const PlayerProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const [source, setSource] = useState<string | undefined>(undefined)
+    const [sourceTitle, setSourceTitle] = useState<string>('')
     const [player, setPlayer] = useState<GrainPlayer | undefined>(undefined)
     const [isPlaying, setIsPlaying] = useState<boolean>(false)
     const [time, setTime] = useState<number>(0)
@@ -34,10 +37,27 @@ export const PlayerProvider: FC<{ children: ReactNode }> = ({ children }) => {
         }
     }
 
+    const setTrack = (url: string | ArrayBuffer | undefined, title: string) => {
+        setSource(url)
+        setSourceTitle(title)
+    }
+
+    const resetPlayer = () => {
+        if (isPlaying) {
+            player?.stop()
+            setIsPlaying(false)
+        }
+        setTime(0)
+        setPitchOffset(0)
+        setPlaybackRate(1)
+        setTrack(undefined, '')
+    }
+
     return (
         <PlayerContext.Provider value={{ 
             source, 
-            setSource, 
+            setTrack,
+            sourceTitle,
             player, 
             initPlayer,
             time, 
@@ -47,7 +67,8 @@ export const PlayerProvider: FC<{ children: ReactNode }> = ({ children }) => {
             pitchOffset,
             setPitchOffset,
             playbackRate,
-            setPlaybackRate 
+            setPlaybackRate,
+            resetPlayer 
         }}>
             {children}
         </PlayerContext.Provider>

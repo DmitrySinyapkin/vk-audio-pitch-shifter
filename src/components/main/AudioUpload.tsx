@@ -1,12 +1,12 @@
-import { useContext, useEffect } from "react";
+import { FC, useContext } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
 import { Placeholder, DropZone } from "@vkontakte/vkui";
 import { Icon56MusicOutline } from '@vkontakte/icons';
 
 const AudioUpload = () => {
-    const { setSource } = useContext(PlayerContext)
+    const { setTrack } = useContext(PlayerContext)
 
-    const Item = ({ active }) => (
+    const Item: FC<{ active: boolean }> = ({ active }) => (
         <Placeholder.Container>
           <Placeholder.Icon>
             <Icon56MusicOutline fill={active ? 'var(--vkui--color_icon_accent)' : undefined} />
@@ -25,11 +25,13 @@ const AudioUpload = () => {
     const dropHandler = (event) => {
         event.preventDefault()
 
+        const title = event.dataTransfer.files[0]?.name || ''
+        
         const fileReader = new FileReader()
         fileReader.onload = function(e) {
             const url = e.target?.result
-            if (url && setSource) {
-                setSource(url)
+            if (url && setTrack) {
+                setTrack(url, title)
             }
         }
         fileReader.readAsDataURL(event.dataTransfer.files[0]) 
