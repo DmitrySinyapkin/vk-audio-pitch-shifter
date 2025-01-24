@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect, useRef, useState } from "react";
+import { DragEventHandler, FC, useContext, useEffect, useRef, useState } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
 import { Placeholder, DropZone, VisuallyHidden, Spinner } from "@vkontakte/vkui";
 import { Icon56MusicOutline } from '@vkontakte/icons';
@@ -37,11 +37,11 @@ const AudioUpload = () => {
         </Placeholder.Container>
       );
       
-    const dragOverHandler = (event: DragEvent) => {
+    const dragOverHandler: DragEventHandler<HTMLDivElement> = (event) => {
         event.preventDefault()
     };
       
-    const dropHandler = (event: DragEvent) => {
+    const dropHandler: DragEventHandler<HTMLDivElement> = (event) => {
         event.preventDefault()
         if (event.dataTransfer) {
             uploadFile(event.dataTransfer.files[0])
