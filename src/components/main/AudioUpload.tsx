@@ -1,10 +1,13 @@
-import { FC, useContext } from "react";
+import { FC, useContext, useState } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
 import { Placeholder, DropZone } from "@vkontakte/vkui";
 import { Icon56MusicOutline } from '@vkontakte/icons';
+import CustomSnackbar from "../common/CustomSnackbar";
 
 const AudioUpload = () => {
     const { setTrack } = useContext(PlayerContext)
+
+    const [error, setError] = useState<string | null>(null)
 
     const Item: FC<{ active: boolean }> = ({ active }) => (
         <Placeholder.Container>
@@ -13,7 +16,7 @@ const AudioUpload = () => {
           </Placeholder.Icon>
           <Placeholder.Header>Загрузить аудио</Placeholder.Header>
           <Placeholder.Text>
-            Перенесите аудио-файл сюда, чтобы изменить его тональность
+            Перенесите аудио-файл сюда, чтобы изменить его тональность или темп
           </Placeholder.Text>
         </Placeholder.Container>
       );
@@ -24,6 +27,11 @@ const AudioUpload = () => {
       
     const dropHandler = (event) => {
         event.preventDefault()
+
+        if (!event.dataTransfer.files[0]?.type.includes('audio')) {
+            setError('Неподдерживаемый формат. Загрузите аудио-файл')
+            return
+        }
 
         const title = event.dataTransfer.files[0]?.name || ''
         
@@ -37,6 +45,10 @@ const AudioUpload = () => {
         fileReader.readAsDataURL(event.dataTransfer.files[0]) 
     }
 
+    const onErrorClose = () => {
+        setError(null)
+    }
+
     return (
         <>
             <DropZone.Grid>
@@ -44,6 +56,7 @@ const AudioUpload = () => {
                     {({ active }) => <Item active={active} />}
                 </DropZone>
             </DropZone.Grid>
+            {error && <CustomSnackbar type="error" text={error} onClose={onErrorClose} />}
         </>
     )
 }
