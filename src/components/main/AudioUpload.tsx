@@ -37,13 +37,15 @@ const AudioUpload = () => {
         </Placeholder.Container>
       );
       
-    const dragOverHandler = (event) => {
+    const dragOverHandler = (event: DragEvent) => {
         event.preventDefault()
     };
       
-    const dropHandler = (event) => {
+    const dropHandler = (event: DragEvent) => {
         event.preventDefault()
-        uploadFile(event.dataTransfer.files[0]) 
+        if (event.dataTransfer) {
+            uploadFile(event.dataTransfer.files[0])
+        } 
     }
 
     const uploadFile = (file: File) => {
