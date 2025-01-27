@@ -9,7 +9,7 @@ const TrackNavigation  = () => {
     const changePosition = (value: number) => {
         if (player?.state === 'started') {
             player?.stop()
-            player?.start(0, value)
+            player?.start(0, value / playbackRate!)
         }
         if (setTime) setTime(value)
     }
@@ -20,7 +20,7 @@ const TrackNavigation  = () => {
             <div style={{ width: '200px' }}>
                 <Slider
                     min={0}
-                    max={player?.buffer?.duration! / playbackRate!}
+                    max={player?.buffer?.duration}
                     value={time}
                     onChange={changePosition}
                     size="s"
