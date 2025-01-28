@@ -25,7 +25,7 @@ const RootWrapper = () => {
       hasCustomPanelHeaderAfter={true} 
     >
       <AdaptivityProvider {...vkBridgeAdaptivityProps}>
-        <AppRoot mode="full" safeAreaInsets={vkBridgeInsets}>
+        <AppRoot mode="full" layout='plain' safeAreaInsets={vkBridgeInsets}>
           <PanelProvider>
             <PlayerProvider>
               <App />

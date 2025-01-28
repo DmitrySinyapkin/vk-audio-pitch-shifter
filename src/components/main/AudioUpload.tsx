@@ -29,7 +29,7 @@ const AudioUpload = () => {
           </Placeholder.Icon>
           <Placeholder.Header>Загрузить аудио</Placeholder.Header>
           <Placeholder.Text>
-            Перетащите аудио-файл сюда, чтобы изменить его тональность или темп
+            Перетащите mp3 или wav файл сюда, чтобы изменить его тональность или темп
           </Placeholder.Text>
           <VisuallyHidden>
             <input type="file" ref={inputRef} onChange={onInputFileChange} />

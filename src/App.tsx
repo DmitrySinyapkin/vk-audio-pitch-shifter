@@ -10,10 +10,10 @@ function App() {
   return (
     <Root activeView='main-view'>
       <View id="main-view" activePanel={activePanel}>
-          <Panel id="main">
+          <Panel id="main" centered>
               <MainPanel />
           </Panel>
-          <Panel id="player">
+          <Panel id="player" centered>
               <PlayerPanel />
           </Panel>
       </View>
