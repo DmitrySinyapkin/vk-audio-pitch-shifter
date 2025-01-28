@@ -3,6 +3,7 @@ import { PlayerContext } from "../../context/PlayerContext";
 import { Placeholder, DropZone, VisuallyHidden, Spinner } from "@vkontakte/vkui";
 import { Icon56MusicOutline } from '@vkontakte/icons';
 import CustomSnackbar from "../common/CustomSnackbar";
+import { isFileFormatSupported } from "../../utils/fileUtils";
 
 const AudioUpload = () => {
     const { player, setTrack } = useContext(PlayerContext)
@@ -49,22 +50,21 @@ const AudioUpload = () => {
     }
 
     const uploadFile = (file: File) => {
-        if (!file.type.includes('audio')) {
-            setError('Неподдерживаемый формат. Загрузите аудио-файл')
-            return
-        }
-
-        setLoading(true)
-        const title = file.name || ''
-        
-        const fileReader = new FileReader()
-        fileReader.onload = function(e) {
-            const url = e.target?.result
-            if (url && typeof url === 'string' && setTrack) {
-                setTrack(url, title)
+        if (isFileFormatSupported(file)) {
+            setLoading(true)
+            const title = file.name || ''
+            
+            const fileReader = new FileReader()
+            fileReader.onload = function(e) {
+                const url = e.target?.result
+                if (url && typeof url === 'string' && setTrack) {
+                    setTrack(url, title)
+                }
             }
+            fileReader.readAsDataURL(file)
+        } else {
+            setError('Неподдерживаемый формат. Загрузите mp3 или wav файл')
         }
-        fileReader.readAsDataURL(file)
     }
 
     const onInputFileChange = () => {

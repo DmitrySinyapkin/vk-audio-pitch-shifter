@@ -16,7 +16,7 @@ const TrackNavigation  = () => {
 
     return (
         <Flex direction="column" justify="center" align="end">
-            <Text weight="3">{ formatCurrentTime(time! / playbackRate!) } / { formatCurrentTime(player?.buffer?.duration! / playbackRate!) }</Text>
+            <Text weight="3">{ formatCurrentTime(time! / playbackRate!) } {/* / { formatCurrentTime(player?.buffer?.duration! / playbackRate!) } */}</Text>
             <div style={{ width: '200px' }}>
                 <Slider
                     min={0}
