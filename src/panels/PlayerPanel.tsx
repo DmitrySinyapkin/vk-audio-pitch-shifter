@@ -5,6 +5,7 @@ import { PanelHeader, PanelHeaderButton, Group, Flex, Spacing } from "@vkontakte
 import { Icon24BrowserBack } from '@vkontakte/icons'
 import AudioPlayer from "../components/player/AudioPlayer";
 import PitchShifter from "../components/pitchShifter/PitchShifter";
+import SaveButton from "../components/pitchShifter/SaveButton";
 
 const PlayerPanel = () => {
     const { sourceTitle, resetPlayer } = useContext(PlayerContext)
@@ -33,6 +34,9 @@ const PlayerPanel = () => {
                     <AudioPlayer />
                     <Spacing size='4xl' />
                     <PitchShifter />
+                    <Spacing size='4xl' />
+                    <Spacing size='4xl' />
+                    <SaveButton />
                 </Flex>
                 <Spacing size='4xl' />
             </Group>

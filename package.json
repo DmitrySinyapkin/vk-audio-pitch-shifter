@@ -16,6 +16,7 @@
     "@vkontakte/vk-bridge-react": "^1.0.1",
     "@vkontakte/vk-tunnel": "^0.2.4",
     "@vkontakte/vkui": "^6.6.0",
+    "lamejs": "zhuker/lamejs",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
