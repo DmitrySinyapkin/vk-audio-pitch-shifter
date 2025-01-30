@@ -31,7 +31,7 @@ function isOutputFormat(value: SegmentedControlValue): value is OutputFormat {
     return typeof value === 'string' && OUTPUT_TYPES.includes(value)
 }
 
-const SaveButton = () => {
+const SaveTransposedAudio = () => {
     const { player, sourceTitle, pitchOffset, playbackRate } = useContext(PlayerContext)
 
     const [format, setFormat] = useState<OutputFormat>('mp3')
@@ -130,4 +130,4 @@ const SaveButton = () => {
     )
 }
 
-export default SaveButton
+export default SaveTransposedAudio
