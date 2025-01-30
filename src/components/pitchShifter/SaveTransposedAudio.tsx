@@ -64,7 +64,7 @@ const SaveButton = () => {
 
             if (buffer) {
                 const sampleRate: number = buffer.sampleRate
-                const length: number = buffer.length
+                const length: number = Math.floor(buffer.length / playbackRate)
                 const numberOfChannels: number = buffer?.numberOfChannels
 
                 const offlineCtx = new OfflineAudioContext(numberOfChannels, length, sampleRate) //(channels,length,Sample rate);
@@ -74,10 +74,10 @@ const SaveButton = () => {
                 source.connect(offlineCtx.destination)
                 source.buffer = buffer
 
-                //speed the playback up
+                //change pitch and playbackRate
                 source.playbackRate.value = playbackRate
-                source.detune.value = -12 * Math.log2(playbackRate) + pitchOffset
-                console.log(playbackRate, pitchOffset, -12 * Math.log2(playbackRate))
+                const pitchCompensation = -12 * Math.log2(playbackRate)
+                source.detune.value = pitchOffset * 100 + pitchCompensation
 
                 //lines the audio for rendering
                 source.start()
