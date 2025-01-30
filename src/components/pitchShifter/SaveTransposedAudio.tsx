@@ -9,6 +9,11 @@ interface WorkerMessage {
     url: string
 }
 
+interface SnackbarMessage {
+    type: 'success' | 'error'
+    text: string
+}
+
 const formats: SegmentedControlOptionInterface[] = [
     {
         label: 'MP3',
@@ -31,7 +36,7 @@ const SaveButton = () => {
 
     const [format, setFormat] = useState<OutputFormat>('mp3')
     const [processing, setProcessing] = useState<boolean>(false)
-    const [error, setError] = useState<string | null>(null)
+    const [message, setMessage] = useState<SnackbarMessage | null>(null)
 
     const worker: Worker = new Worker(new URL('../../worker/converter.ts', import.meta.url), {
         type: 'module'
@@ -45,8 +50,15 @@ const SaveButton = () => {
             document.body.appendChild(link);
             link.click()
             document.body.removeChild(link)
+            setMessage({
+                type: 'success',
+                text: 'Файл сохранен'
+            })
         } else {
-            setError('Ошибка при сохранении')
+            setMessage({
+                type: 'error',
+                text: 'Ошибка при сохранении'
+            })
         }
         setProcessing(false)
     }
@@ -100,7 +112,7 @@ const SaveButton = () => {
     }
 
     const onErrorClose = () => {
-        setError(null)
+        setMessage(null)
     }
 
     return (
@@ -113,7 +125,7 @@ const SaveButton = () => {
                 </div>
                 <Button onClick={onClick} loading={processing}>Сохранить</Button>
             </Flex>
-            {error && <CustomSnackbar type="error" text={error} onClose={onErrorClose} />}
+            {message && <CustomSnackbar type={message.type} text={message.text} onClose={onErrorClose} />}
         </>
     )
 }
