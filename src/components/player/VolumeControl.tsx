@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState } from 'react'
 import { PlayerContext } from '../../context/PlayerContext'
 import { Flex, IconButton, Slider } from '@vkontakte/vkui'
 import { Icon20Volume, Icon20Mute } from '@vkontakte/icons'

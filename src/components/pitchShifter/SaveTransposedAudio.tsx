@@ -99,7 +99,7 @@ const SaveTransposedAudio = () => {
                 offlineCtx.oncomplete = function(e) {
                     //copies the rendered buffer into your variable.
                     const speedUpBuffer = e.renderedBuffer
-                    const channels: Float32Array<ArrayBufferLike>[] = []
+                    const channels: Float32Array[] = []
 
                     for (let i = 0; i < speedUpBuffer.numberOfChannels; i++) {
                         channels.push(speedUpBuffer.getChannelData(i))
