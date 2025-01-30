@@ -1,16 +1,35 @@
 import { useContext, useState } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
-import { Button } from "@vkontakte/vkui";
+import { Button, Flex, SegmentedControl, FormItem, SegmentedControlValue, SegmentedControlOptionInterface } from "@vkontakte/vkui";
 import CustomSnackbar from "../common/CustomSnackbar";
+import { OUTPUT_TYPES } from "../../constants/file";
 
 interface WorkerMessage {
     status: string
     url: string
 }
 
+const formats: SegmentedControlOptionInterface[] = [
+    {
+        label: 'MP3',
+        value: 'mp3',
+        'aria-label': 'MP3'
+    },
+    {
+        label: 'WAV',
+        value: 'wav',
+        'aria-label': 'WAV'
+    }
+]
+
+function isOutputFormat(value: SegmentedControlValue): value is OutputFormat {
+    return typeof value === 'string' && OUTPUT_TYPES.includes(value)
+}
+
 const SaveButton = () => {
     const { player, sourceTitle, pitchOffset, playbackRate } = useContext(PlayerContext)
 
+    const [format, setFormat] = useState<OutputFormat>('mp3')
     const [processing, setProcessing] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -20,16 +39,22 @@ const SaveButton = () => {
 
     worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.status === 'success') {
-            setProcessing(false)
             const link = document.createElement('a');
             link.href = e.data.url;
-            link.download = sourceTitle || 'output.mp3';
+            link.download = sourceTitle ? sourceTitle.split('.')[0] + ' (transposed).' + format : 'output.' + format;
             document.body.appendChild(link);
             link.click()
             document.body.removeChild(link)
         } else {
             setError('Ошибка при сохранении')
         }
+        setProcessing(false)
+    }
+
+    const onFormatChange = (value: SegmentedControlValue) => {
+        if (isOutputFormat(value)) {
+            setFormat(value)
+        }   
     }
 
     const onClick = () => {
@@ -51,7 +76,8 @@ const SaveButton = () => {
 
                 //speed the playback up
                 source.playbackRate.value = playbackRate
-                source.detune.value = pitchOffset
+                source.detune.value = -12 * Math.log2(playbackRate) + pitchOffset
+                console.log(playbackRate, pitchOffset, -12 * Math.log2(playbackRate))
 
                 //lines the audio for rendering
                 source.start()
@@ -61,13 +87,13 @@ const SaveButton = () => {
                 offlineCtx.oncomplete = function(e) {
                     //copies the rendered buffer into your variable.
                     const speedUpBuffer = e.renderedBuffer
-                    const channelsData: Float32Array<ArrayBufferLike>[] = []
+                    const channels: Float32Array<ArrayBufferLike>[] = []
 
                     for (let i = 0; i < speedUpBuffer.numberOfChannels; i++) {
-                        channelsData.push(speedUpBuffer.getChannelData(i))
+                        channels.push(speedUpBuffer.getChannelData(i))
                     }
                     
-                    worker.postMessage({ channelsData, sampleRate: speedUpBuffer.sampleRate, length: speedUpBuffer.length })
+                    worker.postMessage({ channels, sampleRate: speedUpBuffer.sampleRate, format })
                 }
             }
         }
@@ -79,7 +105,14 @@ const SaveButton = () => {
 
     return (
         <>
-            <Button onClick={onClick} loading={processing}>Сохранить в mp3</Button>
+            <Flex direction="column" gap='2xl' align="center">
+                <div style={{ width: '200px' }}>
+                    <FormItem top='Сохранить в:'>
+                        <SegmentedControl options={formats} value={format} onChange={onFormatChange} />
+                    </FormItem>
+                </div>
+                <Button onClick={onClick} loading={processing}>Сохранить</Button>
+            </Flex>
             {error && <CustomSnackbar type="error" text={error} onClose={onErrorClose} />}
         </>
     )

@@ -1,129 +1,120 @@
-import * as Lamejs from 'lamejs'
+import * as lame from 'lamejs'
+import { encode } from 'wav-encoder'
 
-interface InputMessage {
-    channelsData: Float32Array<ArrayBufferLike>[]
+interface IncomingMessage {
+    channels: Float32Array[]
     sampleRate: number
-    length: number
+    format: OutputFormat
 }
 
-function convertDataToMp3Url(data: InputMessage, format: string = 'mp3') {
-    let numOfChan = data.channelsData.length,
-        btwLength = data.length * numOfChan * 2 + 44,
-        btwArrBuff = new ArrayBuffer(btwLength),
-        btwView = new DataView(btwArrBuff),
-        btwChnls = data.channelsData,
-        btwIndex,
-        btwSample,
-        btwOffset = 0,
-        btwPos = 0;
-    setUint32(0x46464952); // "RIFF"
-    setUint32(btwLength - 8); // file length - 8
-    setUint32(0x45564157); // "WAVE"
-    setUint32(0x20746d66); // "fmt " chunk
-    setUint32(16); // length = 16
-    setUint16(1); // PCM (uncompressed)
-    setUint16(numOfChan);
-    setUint32(data.sampleRate);
-    setUint32(data.sampleRate * 2 * numOfChan); // avg. bytes/sec
-    setUint16(numOfChan * 2); // block-align
-    setUint16(16); // 16-bit
-    setUint32(0x61746164); // "data" - chunk
-    setUint32(btwLength - btwPos - 4); // chunk length
-
-    while (btwPos < btwLength) {
-        for (btwIndex = 0; btwIndex < numOfChan; btwIndex++) {
-          // interleave btwChnls
-          btwSample = Math.max(-1, Math.min(1, btwChnls[btwIndex][btwOffset])); // clamp
-          btwSample =
-            (0.5 + btwSample < 0 ? btwSample * 32768 : btwSample * 32767) | 0; // scale to 16-bit signed int
-          btwView.setInt16(btwPos, btwSample, true); // write 16-bit sample
-          btwPos += 2;
-        }
-        btwOffset++; // next source sample
-      }
-    
-      let wavHdr = Lamejs.WavHeader.readHeader(new DataView(btwArrBuff));
-    
-      //Stereo
-      let chData = new Int16Array(btwArrBuff, wavHdr.dataOffset, wavHdr.dataLen / 2);
-      let leftData = [];
-      let rightData = [];
-      for (let i = 0; i < data.length; i += 2) {
-        leftData.push(chData[i]);
-        rightData.push(chData[i + 1]);
-      }
-      let left = new Int16Array(leftData);
-      let right = new Int16Array(rightData);
-    
-      if (format === "mp3") {
-        //STEREO
-        if (wavHdr.channels === 2)
-          return wavToMp3(
-            wavHdr.channels,
-            wavHdr.sampleRate,
-            left,
-            right,
-          );
-        //MONO
-        else if (wavHdr.channels === 1)
-          return wavToMp3(wavHdr.channels, wavHdr.sampleRate, chData);
-      } else {
-        const wavBlob = new Blob([btwArrBuff], { type: "audio/wav" });
-        var bUrl = URL.createObjectURL(wavBlob);
-        return bUrl
+function float32ToInt16(buffer: Float32Array): Int16Array {
+    const l = buffer.length;
+    const buf = new Int16Array(l)
+    for (let i = 0; i < l; i++) {
+        buf[i] = Math.min(1, Math.max(-1, buffer[i])) * 0x7FFF
     }
-
-    function setUint16(data: number) {
-        btwView.setUint16(btwPos, data, true);
-        btwPos += 2;
-    }
-
-    function setUint32(data: number) {
-        btwView.setUint32(btwPos, data, true);
-        btwPos += 4;
-    }
+    return buf
 }
 
-function wavToMp3(channels: number, sampleRate: number, left: Int16Array<ArrayBuffer>, right: Int16Array<ArrayBuffer> | null = null) {
-    var buffer = [];
-    var mp3enc = new Lamejs.Mp3Encoder(channels, sampleRate, 128);
-    var remaining = left.length;
-    var samplesPerFrame = 1152;
+function audioDataToMp3Blob(channels: Float32Array[], sampleRate: number): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+        try {
+            const numChannels = channels.length
+            let leftChannel: Int16Array
+            let rightChannel: Int16Array | null
 
-    for (var i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
-        if (!right) {
-            var mono = left.subarray(i, i + samplesPerFrame);
-            var mp3buf = mp3enc.encodeBuffer(mono);
-        } else {
-            var leftChunk = left.subarray(i, i + samplesPerFrame);
-            var rightChunk = right.subarray(i, i + samplesPerFrame);
-            var mp3buf = mp3enc.encodeBuffer(leftChunk, rightChunk);
-        }
-        if (mp3buf.length > 0) {
-            buffer.push(mp3buf); //new Int8Array(mp3buf));
-        }
-        remaining -= samplesPerFrame;
-    }
-    var d = mp3enc.flush();
-    if (d.length > 0) {
-        buffer.push(new Int8Array(d));
-    }
+            // Interleave stereo channels if needed
+            if (numChannels === 2) {
+                leftChannel = float32ToInt16(channels[0])
+                rightChannel = float32ToInt16(channels[1])
+            } else {
+                leftChannel = float32ToInt16(channels[0])
+                rightChannel = null
+            }
 
-    var mp3Blob = new Blob(buffer, {type: 'audio/mp3'});
-    var bUrl = URL.createObjectURL(mp3Blob);
-    return bUrl
+            // Create MP3 encoder
+            const mp3Encoder = new lame.Mp3Encoder(numChannels, sampleRate, 128)
+            const mp3Data: Int8Array[] = [];
+
+            // Encode chunks of data
+            const chunkSize = 1152
+            for (let i = 0; i < leftChannel.length; i += chunkSize) {
+                let mp3Chunk
+                if (rightChannel) {
+                    const leftChunk = leftChannel.subarray(i, i + chunkSize)
+                    const rightChunk = rightChannel.subarray(i, i + chunkSize)
+                    mp3Chunk = mp3Encoder.encodeBuffer(leftChunk, rightChunk)
+                } else {
+                    const chunk = leftChannel.subarray(i, i + chunkSize)
+                    mp3Chunk = mp3Encoder.encodeBuffer(chunk)
+                    
+                }
+                if (mp3Chunk.length > 0) {
+                    mp3Data.push(new Int8Array(mp3Chunk))
+                }
+                
+            }
+
+            // Finalize MP3 file
+            const mp3Final = mp3Encoder.flush();
+            if (mp3Final.length > 0) {
+                mp3Data.push(new Int8Array(mp3Final))
+            }
+
+            // Concatenate all MP3 chunks into a single ArrayBuffer
+            const mp3Blob = new Blob(mp3Data, { type: 'audio/mp3' })
+            resolve(mp3Blob);
+
+        } catch (error) {
+            reject(error)
+        }
+    });
 }
 
-self.onmessage = (e: MessageEvent<InputMessage>) => {
+function audioDataToWavBlob(channels: Float32Array[], sampleRate: number): Promise<Blob> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Encode to WAV format
+            const wav = await encode({
+                sampleRate: sampleRate,
+                channelData: channels,
+                float: false,
+                interleaved: channels.length === 1 // If mono, set interleaved to true
+            });
+
+            // Create a Blob from the encoded WAV data
+            const wavBlob = new Blob([wav], { type: 'audio/wav' })
+            resolve(wavBlob);
+
+        } catch (error) {
+            reject(error)
+        }
+    });
+}
+
+// Listen for messages from the main thread
+self.onmessage = async (event: MessageEvent<IncomingMessage>) => {
+    const { channels, sampleRate, format } = event.data
+
     try {
-        const url = convertDataToMp3Url(e.data)
-        self.postMessage({
-            status: 'success',
-            url
-        })
+        let blob: Blob
+        if (format === 'mp3') {
+            blob = await audioDataToMp3Blob(channels, sampleRate)
+        } else  {
+            blob = await audioDataToWavBlob(channels, sampleRate)
+        }
+    
+        if (blob) {
+            const url = URL.createObjectURL(blob)
+            postMessage({
+                status: 'success',
+                url
+            })
+        } else {
+            postMessage({ status: 'error' })
+        }
     } catch(err) {
-        self.postMessage({ status: 'error' })
+        console.log(err)
+        postMessage({ status: 'error' })
     }
 }
-
-export {}

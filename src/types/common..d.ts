@@ -6,3 +6,5 @@ interface CustomSliderProps {
     onChange: (value: number) => void
     description: ReactNode
 }
+
+type OutputFormat = 'mp3' | 'wav'
