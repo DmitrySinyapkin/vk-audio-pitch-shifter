@@ -73,7 +73,7 @@ const SaveTransposedAudio = () => {
 
     const onClick = () => {
         if (player?.buffer && playbackRate && pitchOffset !== undefined) {
-            setProcessing('Подготовка аудио...')
+            setProcessing('Обработка аудио...')
             const buffer = player.buffer.get()
 
             if (buffer) {
