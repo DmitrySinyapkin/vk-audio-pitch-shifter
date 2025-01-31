@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
-import { Button, Flex, SegmentedControl, FormItem, SegmentedControlValue, SegmentedControlOptionInterface } from "@vkontakte/vkui";
+import { Button, Flex, SegmentedControl, FormItem, SegmentedControlValue, SegmentedControlOptionInterface, Spinner, Text, Popover, Div } from "@vkontakte/vkui";
 import CustomSnackbar from "../common/CustomSnackbar";
 import { OUTPUT_TYPES } from "../../constants/file";
 import * as Tone from 'tone'
@@ -51,17 +51,18 @@ const SaveTransposedAudio = () => {
             document.body.appendChild(link);
             link.click()
             document.body.removeChild(link)
+            setProcessing(false)
             setMessage({
                 type: 'success',
                 text: 'Файл сохранен'
             })
         } else {
+            setProcessing(false)
             setMessage({
                 type: 'error',
                 text: 'Ошибка при сохранении'
             })
         }
-        setProcessing(false)
     }
 
     const onFormatChange = (value: SegmentedControlValue) => {
@@ -106,7 +107,22 @@ const SaveTransposedAudio = () => {
                         <SegmentedControl options={formats} value={format} onChange={onFormatChange} />
                     </FormItem>
                 </div>
-                <Button onClick={onClick} loading={processing}>Сохранить</Button>
+                <Popover
+                    shown={processing}
+                    placement="bottom"
+                    content={
+                        <Flex align="center" style={{ marginTop: 10 }}>
+                            <Div>
+                                <Spinner size="regular" />
+                            </Div>
+                            <Div>
+                                <Text weight="3">Обработка...</Text>
+                            </Div>
+                        </Flex>
+                    }
+                >
+                    <Button size="l" onClick={onClick} disabled={processing}>Сохранить</Button>
+                </Popover>
             </Flex>
             {message && <CustomSnackbar type={message.type} text={message.text} onClose={onErrorClose} />}
         </>
