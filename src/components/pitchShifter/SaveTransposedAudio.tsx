@@ -17,14 +17,14 @@ interface SnackbarMessage {
 
 const formats: SegmentedControlOptionInterface[] = [
     {
-        label: 'MP3',
-        value: 'mp3',
-        'aria-label': 'MP3'
-    },
-    {
         label: 'WAV',
         value: 'wav',
         'aria-label': 'WAV'
+    },
+    {
+        label: 'MP3',
+        value: 'mp3',
+        'aria-label': 'MP3'
     }
 ]
 
@@ -35,8 +35,8 @@ function isOutputFormat(value: SegmentedControlValue): value is OutputFormat {
 const SaveTransposedAudio = () => {
     const { player, sourceTitle, pitchOffset, playbackRate } = useContext(PlayerContext)
 
-    const [format, setFormat] = useState<OutputFormat>('mp3')
-    const [processing, setProcessing] = useState<boolean>(false)
+    const [format, setFormat] = useState<OutputFormat>('wav')
+    const [processing, setProcessing] = useState<string>('')
     const [message, setMessage] = useState<SnackbarMessage | null>(null)
 
     const worker: Worker = new Worker(new URL('../../worker/converter.ts', import.meta.url), {
@@ -51,13 +51,13 @@ const SaveTransposedAudio = () => {
             document.body.appendChild(link);
             link.click()
             document.body.removeChild(link)
-            setProcessing(false)
+            setProcessing('')
             setMessage({
                 type: 'success',
                 text: 'Файл сохранен'
             })
         } else {
-            setProcessing(false)
+            setProcessing('')
             setMessage({
                 type: 'error',
                 text: 'Ошибка при сохранении'
@@ -73,7 +73,7 @@ const SaveTransposedAudio = () => {
 
     const onClick = () => {
         if (player?.buffer && playbackRate && pitchOffset !== undefined) {
-            setProcessing(true)
+            setProcessing('Подготовка аудио...')
             const buffer = player.buffer.get()
 
             if (buffer) {
@@ -89,6 +89,7 @@ const SaveTransposedAudio = () => {
                         channels.push(outputBuffer.getChannelData(i))
                     }
                     
+                    setProcessing(`Создание ${format}-файла...`)
                     worker.postMessage({ channels, sampleRate: outputBuffer.sampleRate, format })
                 })
             }
@@ -108,7 +109,7 @@ const SaveTransposedAudio = () => {
                     </FormItem>
                 </div>
                 <Popover
-                    shown={processing}
+                    shown={processing !== ''}
                     placement="bottom"
                     content={
                         <Flex align="center" style={{ marginTop: 10 }}>
@@ -116,12 +117,12 @@ const SaveTransposedAudio = () => {
                                 <Spinner size="regular" />
                             </Div>
                             <Div>
-                                <Text weight="3">Обработка...</Text>
+                                <Text weight="3">{ processing }</Text>
                             </Div>
                         </Flex>
                     }
                 >
-                    <Button size="l" onClick={onClick} disabled={processing}>Сохранить</Button>
+                    <Button size="l" onClick={onClick} disabled={processing !== ''}>Сохранить</Button>
                 </Popover>
             </Flex>
             {message && <CustomSnackbar type={message.type} text={message.text} onClose={onErrorClose} />}
