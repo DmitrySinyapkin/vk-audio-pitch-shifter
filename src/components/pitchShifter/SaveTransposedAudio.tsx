@@ -1,8 +1,9 @@
 import { useContext, useState } from "react";
 import { PlayerContext } from "../../context/PlayerContext";
-import { Button, Flex, SegmentedControl, FormItem, SegmentedControlValue, SegmentedControlOptionInterface } from "@vkontakte/vkui";
+import { Button, Flex, SegmentedControl, FormItem, SegmentedControlValue, SegmentedControlOptionInterface, Spinner, Text, Popover, Div } from "@vkontakte/vkui";
 import CustomSnackbar from "../common/CustomSnackbar";
 import { OUTPUT_TYPES } from "../../constants/file";
+import * as Tone from 'tone'
 
 interface WorkerMessage {
     status: string
@@ -50,17 +51,18 @@ const SaveTransposedAudio = () => {
             document.body.appendChild(link);
             link.click()
             document.body.removeChild(link)
+            setProcessing(false)
             setMessage({
                 type: 'success',
                 text: 'Файл сохранен'
             })
         } else {
+            setProcessing(false)
             setMessage({
                 type: 'error',
                 text: 'Ошибка при сохранении'
             })
         }
-        setProcessing(false)
     }
 
     const onFormatChange = (value: SegmentedControlValue) => {
@@ -75,38 +77,20 @@ const SaveTransposedAudio = () => {
             const buffer = player.buffer.get()
 
             if (buffer) {
-                const sampleRate: number = buffer.sampleRate
-                const length: number = Math.floor(buffer.length / playbackRate)
-                const numberOfChannels: number = buffer?.numberOfChannels
-
-                const offlineCtx = new OfflineAudioContext(numberOfChannels, length, sampleRate) //(channels,length,Sample rate);
-
-                //create source node and load buffer
-                const source = offlineCtx.createBufferSource()
-                source.connect(offlineCtx.destination)
-                source.buffer = buffer
-
-                //change pitch and playbackRate
-                source.playbackRate.value = playbackRate
-                const pitchCompensation = -12 * Math.log2(playbackRate)
-                source.detune.value = pitchOffset * 100 + pitchCompensation
-
-                //lines the audio for rendering
-                source.start()
-
-                //renders everything you lined up
-                offlineCtx.startRendering()
-                offlineCtx.oncomplete = function(e) {
-                    //copies the rendered buffer into your variable.
-                    const speedUpBuffer = e.renderedBuffer
+                Tone.Offline(() => {
+                    const grainPlayer = new Tone.GrainPlayer({ url: buffer }).toDestination()
+                    grainPlayer.playbackRate = playbackRate
+                    grainPlayer.detune = pitchOffset * 100
+                    grainPlayer.start(0)
+                }, buffer.duration / playbackRate).then((outputBuffer) => {
                     const channels: Float32Array[] = []
 
-                    for (let i = 0; i < speedUpBuffer.numberOfChannels; i++) {
-                        channels.push(speedUpBuffer.getChannelData(i))
+                    for (let i = 0; i < outputBuffer.numberOfChannels; i++) {
+                        channels.push(outputBuffer.getChannelData(i))
                     }
                     
-                    worker.postMessage({ channels, sampleRate: speedUpBuffer.sampleRate, format })
-                }
+                    worker.postMessage({ channels, sampleRate: outputBuffer.sampleRate, format })
+                })
             }
         }
     }
@@ -123,7 +107,22 @@ const SaveTransposedAudio = () => {
                         <SegmentedControl options={formats} value={format} onChange={onFormatChange} />
                     </FormItem>
                 </div>
-                <Button onClick={onClick} loading={processing}>Сохранить</Button>
+                <Popover
+                    shown={processing}
+                    placement="bottom"
+                    content={
+                        <Flex align="center" style={{ marginTop: 10 }}>
+                            <Div>
+                                <Spinner size="regular" />
+                            </Div>
+                            <Div>
+                                <Text weight="3">Обработка...</Text>
+                            </Div>
+                        </Flex>
+                    }
+                >
+                    <Button size="l" onClick={onClick} disabled={processing}>Сохранить</Button>
+                </Popover>
             </Flex>
             {message && <CustomSnackbar type={message.type} text={message.text} onClose={onErrorClose} />}
         </>

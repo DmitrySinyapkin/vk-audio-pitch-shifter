@@ -18,7 +18,7 @@ Run vk-tunnel:
 npm run tunnel
 ```
 
-Buid app:
+Build app:
 ```sh
 npm run build
 ```
