@@ -3,18 +3,8 @@ import { PlayerContext } from "../../context/PlayerContext";
 import { Button, Flex, SegmentedControl, FormItem, SegmentedControlValue, SegmentedControlOptionInterface, Spinner, Text, Popover, Div } from "@vkontakte/vkui";
 import CustomSnackbar from "../common/CustomSnackbar";
 import { OUTPUT_TYPES } from "../../constants/file";
-import { processAudioBuffer } from "../../utils/audioUtils";
+import useConverter from "../../hooks/useConverter";
 import { downloadOutputFile } from "../../utils/fileUtils";
-
-interface WorkerMessage {
-    status: string
-    url: string
-}
-
-interface SnackbarMessage {
-    type: 'success' | 'error'
-    text: string
-}
 
 const formats: SegmentedControlOptionInterface[] = [
     {
@@ -37,29 +27,12 @@ const SaveTransposedAudio = () => {
     const { player, sourceTitle, pitchOffset, playbackRate } = useContext(PlayerContext)
 
     const [format, setFormat] = useState<OutputFormat>('wav')
-    const [processing, setProcessing] = useState<string>('')
-    const [message, setMessage] = useState<SnackbarMessage | null>(null)
 
-    const worker: Worker = new Worker(new URL('../../worker/converter.ts', import.meta.url), {
-        type: 'module'
-      })
-
-    worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
-        if (e.data.status === 'success') {
-            downloadOutputFile(e.data.url, sourceTitle, format)
-            setProcessing('')
-            setMessage({
-                type: 'success',
-                text: 'Файл сохранен'
-            })
-        } else {
-            setProcessing('')
-            setMessage({
-                type: 'error',
-                text: 'Ошибка при сохранении'
-            })
-        }
+    const onFinish = (url: string) => {
+        downloadOutputFile(url, sourceTitle, format)
     }
+
+    const { processing, message, clearMessage, createFile } = useConverter(onFinish)
 
     const onFormatChange = (value: SegmentedControlValue) => {
         if (isOutputFormat(value)) {
@@ -67,31 +40,14 @@ const SaveTransposedAudio = () => {
         }   
     }
 
-    const onClick = async () => {
+    const onSaveButtonClick = async () => {
         if (player?.buffer && playbackRate && pitchOffset !== undefined) {
-            setProcessing('Обработка аудио...')
             const buffer = player.buffer.get()
 
             if (buffer) {
-                try {
-                    const { channels, sampleRate } = await processAudioBuffer(buffer, playbackRate, pitchOffset)
-
-                    setProcessing(`Создание ${format}-файла...`)
-                    worker.postMessage({ channels, sampleRate, format })
-                } catch(err) {
-                    console.log(err)
-                    setProcessing('')
-                    setMessage({
-                        type: 'error',
-                        text: 'Ошибка при обработке аудио'
-                    })
-                }
+                await createFile(buffer, playbackRate, pitchOffset, format)
             }
         }
-    }
-
-    const onErrorClose = () => {
-        setMessage(null)
     }
 
     return (
@@ -116,10 +72,10 @@ const SaveTransposedAudio = () => {
                         </Flex>
                     }
                 >
-                    <Button size="l" onClick={onClick} disabled={processing !== ''}>Сохранить</Button>
+                    <Button size="l" onClick={onSaveButtonClick} disabled={processing !== ''}>Сохранить</Button>
                 </Popover>
             </Flex>
-            {message && <CustomSnackbar type={message.type} text={message.text} onClose={onErrorClose} />}
+            {message && <CustomSnackbar type={message.type} text={message.text} onClose={clearMessage} />}
         </>
     )
 }

@@ -8,3 +8,14 @@ interface CustomSliderProps {
 }
 
 type OutputFormat = 'mp3' | 'wav'
+
+
+interface WorkerMessage {
+    status: string
+    url: string
+}
+
+interface SnackbarMessage {
+    type: 'success' | 'error'
+    text: string
+}
