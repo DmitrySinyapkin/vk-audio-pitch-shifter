@@ -3,7 +3,8 @@ import { PlayerContext } from "../../context/PlayerContext";
 import { Button, Flex, SegmentedControl, FormItem, SegmentedControlValue, SegmentedControlOptionInterface, Spinner, Text, Popover, Div } from "@vkontakte/vkui";
 import CustomSnackbar from "../common/CustomSnackbar";
 import { OUTPUT_TYPES } from "../../constants/file";
-import * as Tone from 'tone'
+import { processAudioBuffer } from "../../utils/audioUtils";
+import { downloadOutputFile } from "../../utils/fileUtils";
 
 interface WorkerMessage {
     status: string
@@ -45,12 +46,7 @@ const SaveTransposedAudio = () => {
 
     worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.status === 'success') {
-            const link = document.createElement('a');
-            link.href = e.data.url;
-            link.download = sourceTitle ? sourceTitle.split('.')[0] + ' (transposed).' + format : 'output.' + format;
-            document.body.appendChild(link);
-            link.click()
-            document.body.removeChild(link)
+            downloadOutputFile(e.data.url, sourceTitle, format)
             setProcessing('')
             setMessage({
                 type: 'success',
@@ -71,27 +67,25 @@ const SaveTransposedAudio = () => {
         }   
     }
 
-    const onClick = () => {
+    const onClick = async () => {
         if (player?.buffer && playbackRate && pitchOffset !== undefined) {
             setProcessing('Обработка аудио...')
             const buffer = player.buffer.get()
 
             if (buffer) {
-                Tone.Offline(() => {
-                    const grainPlayer = new Tone.GrainPlayer({ url: buffer }).toDestination()
-                    grainPlayer.playbackRate = playbackRate
-                    grainPlayer.detune = pitchOffset * 100
-                    grainPlayer.start(0)
-                }, buffer.duration / playbackRate).then((outputBuffer) => {
-                    const channels: Float32Array[] = []
+                try {
+                    const { channels, sampleRate } = await processAudioBuffer(buffer, playbackRate, pitchOffset)
 
-                    for (let i = 0; i < outputBuffer.numberOfChannels; i++) {
-                        channels.push(outputBuffer.getChannelData(i))
-                    }
-                    
                     setProcessing(`Создание ${format}-файла...`)
-                    worker.postMessage({ channels, sampleRate: outputBuffer.sampleRate, format })
-                })
+                    worker.postMessage({ channels, sampleRate, format })
+                } catch(err) {
+                    console.log(err)
+                    setProcessing('')
+                    setMessage({
+                        type: 'error',
+                        text: 'Ошибка при обработке аудио'
+                    })
+                }
             }
         }
     }
